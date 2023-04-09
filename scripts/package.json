@@ -1,0 +1,21 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc --project ./tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "keywords": [],
+  "author": "cp20",
+  "license": "MIT",
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "jsdom": "^21.1.1"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.0",
+    "@types/jsdom": "^21.1.1",
+    "typescript": "^5.0.3"
+  }
+}

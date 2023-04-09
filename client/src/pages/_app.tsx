@@ -2,10 +2,17 @@ import 'ress';
 import '@/styles/global.css';
 import { MantineProvider } from '@mantine/core';
 import type { AppProps } from 'next/app';
+import { GoogleTagManager } from '@/shared/components/GoogleTagManager';
+import usePageTransition from '@/shared/hooks/usePageTransition';
+
+import '@/styles/nprogress.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  usePageTransition();
+
   return (
     <>
+      <GoogleTagManager />
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS
