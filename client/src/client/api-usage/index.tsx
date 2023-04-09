@@ -93,7 +93,7 @@ type lecture = {
     en: string;
   };
   // 開講元
-  origin; string;
+  origin: string;
   // 担当教員名
   teacher: string[];
   // 科目コード (番台+文字列)
