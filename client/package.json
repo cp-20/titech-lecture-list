@@ -17,7 +17,7 @@
     "typecheck": "tsc",
     "prettier": "prettier --config .prettierrc.json './**/*.{js,jsx,ts,tsx,json,md}'",
     "format": "pnpm prettier --write",
-    "prepare": "husky install",
+    "prepare": "cd .. && husky install client/.husky",
     "preinstall": "npx only-allow pnpm",
     "test": "vitest"
   },
