@@ -20,7 +20,7 @@ export const handler: NextApiHandler = async (req, res) => {
     return;
   }
 
-  const response = searchLectures(searchQuery.data);
+  const response = await searchLectures(searchQuery.data);
 
   res.status(200).json(response);
 };

@@ -1,14 +1,24 @@
-import { readFileSync } from 'fs';
 import { z } from 'zod';
 import type { lecturesResponse } from '@/schema/lectures';
 import { lectureSchema } from '@/schema/lectures';
 import type { searchQuery } from '@/schema/searchQuery';
 
-const rawLectures = z
-  .array(lectureSchema)
-  .parse(JSON.parse(readFileSync('./src/data/lectures.json', 'utf-8')));
+const fetchRawLectures = async () =>
+  z
+    .array(lectureSchema)
+    .parse(
+      JSON.parse(
+        await fetch(
+          'https://raw.githubusercontent.com/cp-20/titech-lecture-list/main/client/src/data/lectures.json',
+        ).then((res) => res.text()),
+      ),
+    );
 
-export function searchLectures(searchQuery: searchQuery): lecturesResponse {
+export const searchLectures = async (
+  searchQuery: searchQuery,
+): Promise<lecturesResponse> => {
+  const rawLectures = await fetchRawLectures();
+
   const filteredLectures = rawLectures.filter((lecture) => {
     // 講義名がマッチしないものは除外
     if (searchQuery.title && !lecture.title.ja.includes(searchQuery.title)) {
@@ -91,4 +101,4 @@ export function searchLectures(searchQuery: searchQuery): lecturesResponse {
     finish: filteredLectures.length <= page * limit,
     lectures: pagenatedLectures,
   };
-}
+};
