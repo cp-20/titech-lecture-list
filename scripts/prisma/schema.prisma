@@ -1,0 +1,54 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lecture {
+  id          BigInt           @id @default(autoincrement())
+  link        String
+  title_ja    String
+  title_en    String?
+  origin      String
+  place_type  String
+  place_value String?
+  code_grade  Int
+  code_value  String
+  credit      Int
+  year        String
+  language    String
+  periods     LecturePeriod[]
+  teachers    LectureTeacher[]
+  quarter     LectureQuarter[]
+  created_at  DateTime         @default(now())
+}
+
+model LecturePeriod {
+  id         BigInt   @id @default(autoincrement())
+  lecture_id BigInt
+  day        String
+  period     Int
+  classroom  String
+  created_at DateTime @default(now())
+  Lecture    Lecture? @relation(fields: [lecture_id], references: [id])
+}
+
+model LectureTeacher {
+  id         BigInt   @id @default(autoincrement())
+  lecture_id BigInt
+  name       String
+  created_at DateTime @default(now())
+  Lecture    Lecture? @relation(fields: [lecture_id], references: [id])
+}
+
+model LectureQuarter {
+  id         BigInt   @id @default(autoincrement())
+  lecture_id BigInt
+  quarter    String
+  created_at DateTime @default(now())
+  Lecture    Lecture? @relation(fields: [lecture_id], references: [id])
+}

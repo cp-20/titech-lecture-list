@@ -29,12 +29,12 @@ export const fetchLectureDetail = async (
   const code = (() => {
     const code = details.item(6).querySelector('dd')?.innerHTML;
 
-    return (
-      code && {
-        grade: parseInt(code?.substring(5, 6) + '00', 10),
-        value: code,
-      }
-    );
+    if (code === undefined) return undefined;
+
+    return {
+      grade: parseInt(code?.substring(5, 6) + '00', 10),
+      value: code,
+    };
   })();
   const credit = parseInt(
     details.item(7).querySelector('dd')?.innerHTML ?? '-1',

@@ -14,7 +14,10 @@ export type lecture = {
   // 曜日・時限 (講義室)
   place: string;
   // 科目コード
-  code: string;
+  code: {
+    grade: number;
+    value: string;
+  };
   // 単位
   credit: number;
   // 開講年度
