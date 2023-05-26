@@ -39,7 +39,8 @@ export const searchLectures = async (
     : {};
 
   try {
-    const numberOfLectures = await prisma.lecture.count();
+    // const numberOfLectures = await prisma.lecture.count();
+    const numberOfLectures = 6574;
 
     const page = searchQuery.page ?? 1;
     const limit = searchQuery.limit ?? 50;
