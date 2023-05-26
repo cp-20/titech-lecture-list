@@ -62,6 +62,21 @@ export const lectureCodeSchema = z.object({
 
 export type lectureCode = z.infer<typeof lectureCodeSchema>;
 
+export const lectureQuarterSchema = z.array(
+  z.union([
+    z.literal('1Q'),
+    z.literal('2Q'),
+    z.literal('3Q'),
+    z.literal('4Q'),
+    z.literal('1-2Q'),
+    z.literal('2-3Q'),
+    z.literal('3-4Q'),
+    z.literal('1-4Q'),
+  ]),
+);
+
+export type lectureQuarter = z.infer<typeof lectureQuarterSchema>;
+
 export const lectureSchema = z.object({
   link: z.string(),
   title: z.object({
@@ -74,18 +89,7 @@ export const lectureSchema = z.object({
   code: lectureCodeSchema,
   credit: z.number(),
   year: z.string(),
-  quarter: z.array(
-    z.union([
-      z.literal('1Q'),
-      z.literal('2Q'),
-      z.literal('3Q'),
-      z.literal('4Q'),
-      z.literal('1-2Q'),
-      z.literal('2-3Q'),
-      z.literal('3-4Q'),
-      z.literal('1-4Q'),
-    ]),
-  ),
+  quarter: lectureQuarterSchema,
   language: z.union([z.literal('日本語'), z.literal('英語')]),
 });
 
