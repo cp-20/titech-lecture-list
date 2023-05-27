@@ -17,7 +17,11 @@ export const PresentialLectureList: FC<PresentialLectureListProps> = ({
   lectures,
 }) => {
   return (
-    <ul>
+    <ul
+      css={css`
+        position: relative;
+      `}
+    >
       {lectures.map((lecture) => (
         <LectureListItem key={lecture.link} lecture={lecture} />
       ))}

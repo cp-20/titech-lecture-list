@@ -10,12 +10,15 @@
   "author": "cp20",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^4.13.0",
+    "@supabase/supabase-js": "^2.15.0",
     "cli-progress": "^3.12.0",
     "jsdom": "^21.1.1"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.0",
     "@types/jsdom": "^21.1.1",
+    "prisma": "^4.12.0",
     "typescript": "^5.0.3"
   }
 }

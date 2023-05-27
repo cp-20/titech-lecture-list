@@ -1,7 +1,93 @@
-import { createClient } from '@supabase/supabase-js';
+import { PrismaClient } from '@prisma/client';
+import { readFileSync } from 'fs';
+import { lecture } from './type';
+import { useThread } from '../shared/thread';
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient(
-  'https://icmgieijfinnhpwdyphu.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljbWdpZWlqZmlubmhwd2R5cGh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA3ODQzODUsImV4cCI6MTk5NjM2MDM4NX0.hzPO1D02Fg2ktocCw6gdzXjb2Xj_C1wM74KfxeRIXns'
-);
+const prisma = new PrismaClient();
+
+const lectures = JSON.parse(
+  readFileSync('./src/boundaries/lectures.json', 'utf-8')
+) as lecture[];
+
+const main = async () => {
+  useThread(
+    lectures.map((lecture, i) => async () => {
+      const transactions = [];
+
+      transactions.push(
+        prisma.lecture.create({
+          data: {
+            id: i,
+            link: lecture.link,
+            title_ja: lecture.title.ja,
+            title_en: lecture.title.en,
+            origin: lecture.origin,
+            place_type: lecture.place.type,
+            place_value:
+              lecture.place.type === 'raw' ? lecture.place.value : null,
+            code_grade: lecture.code.grade,
+            code_value: lecture.code.value,
+            credit: lecture.credit,
+            year: lecture.year,
+            language: lecture.language,
+            teachers: lecture.teachers,
+            quarter: lecture.quarter,
+            // periods:
+            //   lecture.place.type === 'normal'
+            //     ? {
+            //         create: lecture.place.periods.map((period) => ({
+            //           lecture_id: i,
+            //           day: period.day,
+            //           period: period.period,
+            //           classroom: period.classroom,
+            //         })),
+            //       }
+            //     : undefined,
+          },
+        })
+      );
+
+      // transactions.push(
+      //   ...lecture.teachers.map((teacher) =>
+      //     prisma.lectureTeacher.create({
+      //       data: {
+      //         lecture_id: i,
+      //         name: teacher,
+      //       },
+      //     })
+      //   )
+      // );
+
+      // transactions.push(
+      //   ...lecture.quarter.map((quarter) =>
+      //     prisma.lectureQuarter.create({
+      //       data: {
+      //         lecture_id: i,
+      //         quarter: quarter,
+      //       },
+      //     })
+      //   )
+      // );
+
+      if (lecture.place.type === 'normal') {
+        transactions.push(
+          ...lecture.place.periods.map((period) =>
+            prisma.lecturePeriod.create({
+              data: {
+                lecture_id: i,
+                day: period.day,
+                period: period.period,
+                classroom: period.classroom,
+              },
+            })
+          )
+        );
+      }
+
+      await Promise.all(transactions);
+    }),
+    10
+  );
+};
+
+main();

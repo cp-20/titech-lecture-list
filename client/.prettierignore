@@ -34,3 +34,5 @@ yarn-error.log*
 
 # source
 $path.ts
+
+/src/data/lectures.json
