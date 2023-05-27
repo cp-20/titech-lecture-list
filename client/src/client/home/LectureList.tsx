@@ -11,12 +11,10 @@ import { fetcher } from '@/shared/hooks/useSWR';
 
 export type PresentialLectureListProps = {
   lectures: lecture[];
-  isLoading: boolean;
 };
 
 export const PresentialLectureList: FC<PresentialLectureListProps> = ({
   lectures,
-  isLoading,
 }) => {
   return (
     <ul
@@ -24,7 +22,6 @@ export const PresentialLectureList: FC<PresentialLectureListProps> = ({
         position: relative;
       `}
     >
-      {isLoading && 'loading'}
       {lectures.map((lecture) => (
         <LectureListItem key={lecture.link} lecture={lecture} />
       ))}
@@ -36,7 +33,7 @@ export const LectureList: FC = () => {
   const [searchQuery] = useSearchQueryAtom();
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const { data, setSize, isLoading } = useSWRInfinite<lecturesResponse>(
+  const { data, setSize } = useSWRInfinite<lecturesResponse>(
     (page, previousPageData: lecturesResponse | null) => {
       if (previousPageData && previousPageData.finish) return null;
 
@@ -72,7 +69,7 @@ export const LectureList: FC = () => {
 
   return (
     <>
-      <PresentialLectureList lectures={lectures ?? []} isLoading={isLoading} />
+      <PresentialLectureList lectures={lectures ?? []} />
       <div
         ref={loaderRef}
         css={css`
