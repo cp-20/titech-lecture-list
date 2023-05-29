@@ -1,6 +1,6 @@
 import type { NextApiHandler } from 'next';
 import { z } from 'zod';
-import { searchLectures } from '@/boundaries/supabase';
+import { searchLectures } from './searchLectures';
 import { searchQuerySchema } from '@/schema/searchQuery';
 
 const querySchema = z.string().default('{}');
