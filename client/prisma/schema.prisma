@@ -23,11 +23,13 @@ model Lecture {
   language    String
   quarter     String[]
   teachers    String[]
+  periods     LecturePeriod[]
   created_at  DateTime @default(now())
 }
 
 model LecturePeriod {
   id         BigInt   @id @default(autoincrement())
+  lecture    Lecture  @relation(fields: [lecture_id], references: [id])
   lecture_id BigInt
   day        String
   period     Int
