@@ -1,7 +1,8 @@
 import type { NextApiHandler } from 'next';
 import { z } from 'zod';
-import { searchLectures } from '@/boundaries/supabase';
+import { searchLectures } from './searchLectures';
 import { searchQuerySchema } from '@/schema/searchQuery';
+import { cacheResponse } from '@/server/lectures/cacheResponse';
 
 const querySchema = z.string().default('{}');
 
@@ -20,7 +21,9 @@ export const handler: NextApiHandler = async (req, res) => {
     return;
   }
 
-  const response = await searchLectures(searchQuery.data);
+  const response = await cacheResponse(searchQuery.data, (query) =>
+    searchLectures(query),
+  );
 
   if (response === undefined) {
     res.status(500).end();

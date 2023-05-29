@@ -1,104 +1,106 @@
-import { z } from 'zod';
-import type { lecturesResponse } from '@/schema/lectures';
-import { lectureSchema } from '@/schema/lectures';
+import { PrismaClient } from '@prisma/client';
+import type {
+  lecture,
+  lectureQuarter,
+  lecturesResponse,
+} from '@/schema/lectures';
+import type { lecturePlace } from '@/schema/lectures';
 import type { searchQuery } from '@/schema/searchQuery';
-
-const fetchRawLectures = async () =>
-  z
-    .array(lectureSchema)
-    .parse(
-      JSON.parse(
-        await fetch(
-          'https://raw.githubusercontent.com/cp-20/titech-lecture-list/main/client/src/data/lectures.json',
-        ).then((res) => res.text()),
-      ),
-    );
 
 export const searchLectures = async (
   searchQuery: searchQuery,
-): Promise<lecturesResponse> => {
-  const rawLectures = await fetchRawLectures();
+): Promise<lecturesResponse | undefined> => {
+  const prisma = new PrismaClient();
 
-  const filteredLectures = rawLectures.filter((lecture) => {
-    // 講義名がマッチしないものは除外
-    if (searchQuery.title && !lecture.title.ja.includes(searchQuery.title)) {
-      return false;
-    }
+  const titleQuery = searchQuery.title
+    ? { title_ja: { contains: searchQuery.title } }
+    : {};
 
-    // 講師名がマッチしないものは除外
-    if (
-      searchQuery.teacher &&
-      !lecture.teachers.some((teacher) =>
-        teacher.includes(searchQuery.teacher as string),
-      )
-    ) {
-      return false;
-    }
+  const teacherQuery = searchQuery.teacher
+    ? { teacher: { contains: searchQuery.teacher } }
+    : {};
 
-    // 講義コードの番台がマッチしないものは除外
-    if (searchQuery.code && !searchQuery.code.includes(lecture.code.grade)) {
-      return false;
-    }
+  const codeQuery = searchQuery.code
+    ? { code_grade: { in: searchQuery.code } }
+    : {};
 
-    // 学期がマッチしないものは除外
-    if (
-      searchQuery.quarter &&
-      !searchQuery.quarter.some((quarter) => lecture.quarter.includes(quarter))
-    ) {
-      return false;
-    }
+  const quarterQuery = searchQuery.quarter
+    ? { quarter: { hasSome: searchQuery.quarter } }
+    : {};
 
-    // 使用言語がマッチしないものは除外
-    if (
-      searchQuery.language &&
-      !searchQuery.language.includes(lecture.language)
-    ) {
-      return false;
-    }
+  const languageQuery = searchQuery.language
+    ? { language: { in: searchQuery.language } }
+    : {};
 
-    // 曜日がマッチしないものは除外
-    if (
-      searchQuery.day &&
-      !searchQuery.day.some(
-        (day) =>
-          lecture.place.type !== 'normal' ||
-          lecture.place.periods.some((period) => period.day === day),
-      )
-    ) {
-      return false;
-    }
-
-    // 時限がマッチしないものは除外
-    if (
-      searchQuery.period &&
-      !searchQuery.period.some(
-        (period) =>
-          lecture.place.type !== 'normal' ||
-          lecture.place.periods.some((p) => p.period === period),
-      )
-    ) {
-      return false;
-    }
-
-    // すべての条件にマッチしたもののみ残す
-    return true;
-  });
-
-  filteredLectures.sort((a, b) => {
-    // 講義名でソート
-    return a.title.ja.localeCompare(b.title.ja);
-  });
-
-  const { limit = 50, page = 1 } = searchQuery;
-  const pagenatedLectures = filteredLectures.filter((_, i) => {
-    // ページング
-    const start = (page - 1) * limit;
-    const end = page * limit;
-    return i >= start && i < end;
-  });
-
-  return {
-    finish: filteredLectures.length <= page * limit,
-    lectures: pagenatedLectures,
+  const placeQuery = {
+    periods: {
+      some: {
+        period: {
+          in: searchQuery.period,
+        },
+        day: {
+          in: searchQuery.day,
+        },
+      },
+    },
   };
+
+  try {
+    const page = searchQuery.page ?? 1;
+    const limit = searchQuery.limit ?? 50;
+
+    const filteredLectures = await prisma.lecture.findMany({
+      where: {
+        AND: [
+          {
+            ...titleQuery,
+            ...teacherQuery,
+            ...codeQuery,
+            ...quarterQuery,
+            ...languageQuery,
+            ...placeQuery,
+          },
+        ],
+      },
+      include: { periods: true },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const structuredLectures: lecture[] = filteredLectures.map((lecture) => ({
+      code: {
+        grade: lecture.code_grade as 100 | 200 | 300 | 400 | 500 | 600,
+        value: lecture.code_value,
+      },
+      title: {
+        ja: lecture.title_ja,
+        en: lecture.title_en ?? undefined,
+      },
+      teachers: lecture.teachers,
+      credit: lecture.credit,
+      language: lecture.language as '日本語' | '英語',
+      quarter: lecture.quarter as lectureQuarter,
+      year: lecture.year,
+      origin: lecture.origin,
+      link: lecture.link,
+      place: {
+        type: lecture.place_type,
+        value: lecture.place_value,
+        periods: lecture.periods.map((period) => ({
+          day: period.day,
+          period: period.period,
+          classroom: period.classroom,
+        })),
+      } as lecturePlace,
+    }));
+
+    return {
+      finish: structuredLectures.length === 0,
+      lectures: structuredLectures,
+    };
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await prisma.$disconnect();
+  }
 };
