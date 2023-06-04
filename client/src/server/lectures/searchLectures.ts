@@ -16,8 +16,8 @@ export const searchLectures = async (
     ? { title_ja: { contains: searchQuery.title } }
     : {};
 
-  const teacherQuery = searchQuery.teacher
-    ? { teacher: { contains: searchQuery.teacher } }
+  const teachersQuery = searchQuery.teacher
+    ? { teachers: { hasSome: searchQuery.teacher } }
     : {};
 
   const codeQuery = searchQuery.code
@@ -54,7 +54,7 @@ export const searchLectures = async (
         AND: [
           {
             ...titleQuery,
-            ...teacherQuery,
+            ...teachersQuery,
             ...codeQuery,
             ...quarterQuery,
             ...languageQuery,
