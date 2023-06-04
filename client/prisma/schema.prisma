@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Lecture {
-  id          BigInt   @id @default(autoincrement())
+  id          BigInt          @id @default(autoincrement())
   link        String
   title_ja    String
   title_en    String?
@@ -23,16 +23,16 @@ model Lecture {
   language    String
   quarter     String[]
   teachers    String[]
+  created_at  DateTime        @default(now())
   periods     LecturePeriod[]
-  created_at  DateTime @default(now())
 }
 
 model LecturePeriod {
   id         BigInt   @id @default(autoincrement())
-  lecture    Lecture  @relation(fields: [lecture_id], references: [id])
   lecture_id BigInt
   day        String
   period     Int
   classroom  String?
   created_at DateTime @default(now())
+  lecture    Lecture  @relation(fields: [lecture_id], references: [id])
 }
