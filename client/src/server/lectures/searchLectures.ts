@@ -62,6 +62,9 @@ export const searchLectures = async (
           },
         ],
       },
+      orderBy: {
+        title_ja: 'asc',
+      },
       include: { periods: true },
       skip: (page - 1) * limit,
       take: limit,
